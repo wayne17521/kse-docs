@@ -15,28 +15,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Get image tag
         id: get-image-tag
         run: echo "IMAGE_TAG=$(date '+%Y%m%d-%H%M%S')" >> $GITHUB_ENV
       - name: Login to DockerHub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
-          registry: dockerhub.qingcloud.com
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
+          registry: hub.kubesphere.com.cn
+          username: ${{ secrets.HUB_KUBESPHERE_USERNAME }}
+          password: ${{ secrets.HUB_KUBESPHERE_PASSWORD }}
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build and push Docker images
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v7
         with:
           tags: |
-            dockerhub.qingcloud.com/ks_ns/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            hub.kubesphere.com.cn/ks_ns/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           push: true
           platforms: linux/amd64
-          provenance: false
       - name: deploy
         uses: appleboy/ssh-action@v1
         with:
@@ -44,4 +43,4 @@ jobs:
           username: root
           key: ${{ secrets.SSH_KEY }}
           envs: IMAGE_NAME,IMAGE_TAG,NAMESPACE
-          script: kubectl set image --record -n $NAMESPACE deployment/nginx nginx=dockerhub.qingcloud.com/ks_ns/$IMAGE_NAME:$IMAGE_TAG
+          script: kubectl set image --record -n $NAMESPACE deployment/nginx nginx=hub.kubesphere.com.cn/ks_ns/$IMAGE_NAME:$IMAGE_TAG
