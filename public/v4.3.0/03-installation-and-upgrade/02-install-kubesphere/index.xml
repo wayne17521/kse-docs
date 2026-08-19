@@ -14,9 +14,13 @@
       <guid>/v4.3.0/03-installation-and-upgrade/02-install-kubesphere/01-online-install-kubernetes-and-kubesphere/</guid>
       <description>本节介绍如何在可访问 Internet 的环境下安装 Kubernetes 和 KubeSphere。
  安装过程中将用到开源工具 KubeKey 的 v4.x 版本。有关 KubeKey 的更多信息，请访问 GitHub KubeKey 仓库。
- 前提条件   您需要准备至少 1 台 Linux 服务器作为集群节点。在生产环境中，为确保集群具备高可用性，建议准备至少 5 台 Linux 服务器，其中 3 台作为控制平面节点，另外 2 台作为工作节点。如果您在多台 Linux 服务器上安装 KubeSphere，请确保所有服务器属于同一子网。
-  集群节点的操作系统和版本须为 Ubuntu 18.04、Ubuntu 20.04、Ubuntu 22.04、Ubuntu 24.04、Debian 10、Debian 11、CentOS 8、AlmaLinux 9.0 或 Kylin v10。多台服务器的操作系统可以不同。关于其它操作系统和版本支持，请咨询青云科技官方解决方案专家或交付服务专家。
-  在生产环境中，为确保集群具有足够的计算和存储资源，建议每台集群节点配置至少 8 个 CPU 核心、16 GB 内存和 200 GB 磁盘空间。除此之外，建议在每台集群节点的 /var/lib/docker（对于 Docker）或 /var/lib/containerd（对于 containerd） 目录额外挂载至少 200 GB 磁盘空间用于存储容器运行时数据。</description>
+ 核心概念 阅读后续步骤前，建议先了解以下基本概念：
+   控制平面节点 (Master): 负责集群的调度与管理，通常不运行业务负载。
+  工作节点 (Worker): 运行实际业务容器的工作负载节点。
+  etcd: 分布式键值存储，保存集群的所有关键状态数据。
+  容器运行时: 负责创建和运行容器的底层软件。KubeKey 支持自动安装 Docker 和 containerd 两种容器运行时。如需使用 CRI-O 或 iSula，需提前手动安装，但其与 KubeSphere 的兼容性尚未经过充分验证。
+  CNI (容器网络插件): 为集群中的 Pod 提供网络连通能力，常用插件包括 Calico、Cilium、Flannel 等。
+     前提条件   您需要准备至少 1 台 Linux 服务器作为集群节点。在生产环境中，为确保集群具备高可用性，建议准备至少 5 台 Linux 服务器，其中 3 台作为控制平面节点，另外 2 台作为工作节点。如果您在多台 Linux 服务器上安装 KubeSphere，请确保所有服务器属于同一子网。</description>
     </item>
     
     <item>
@@ -27,12 +31,12 @@
       <guid>/v4.3.0/03-installation-and-upgrade/02-install-kubesphere/02-offline-install-kubernetes-and-kubesphere/</guid>
       <description>本节介绍如何在不能访问 Internet 的环境下使用离线安装包部署 Kubernetes 和 KubeSphere。
  安装过程中将用到开源工具 KubeKey 的 v4.x 版本。有关 KubeKey 的更多信息，请访问 GitHub KubeKey 仓库。
-     注意     KubeSphere 社区版用户需要在联网状态下自行构建离线安装包，KubeSphere 其他版本的用户可联系 KubeSphere 交付服务专家获取最新的离线安装包，即可跳过离线安装包的构建过程。
-    前置依赖： 安装过程依赖 tar 工具完成软件包的压缩和解压，请提前确认系统环境已预装该命令。若 config.yaml 中配置了 charts 参数，请确保打包节点已提前安装 Helm。
- 准备工作 参考如下最低配置要求，准备 Linux 主机。
-     角色 主机数量 最低要求（每个节点） 网络要求     打包节点
- 1
- CPU：1 核，内存：1 GB，硬盘：150 GB</description>
+ 注意： KubeSphere 社区版用户需要在联网状态下自行构建离线安装包；KubeSphere 其他版本的用户可联系 KubeSphere 交付服务专家获取最新的离线安装包，即可跳过「构建离线安装包」一节。
+     说明     安装过程依赖 tar 工具完成软件包的压缩和解压，请提前确认系统环境已预装该命令。若 config.yaml 中配置了 charts 参数，请确保打包节点已提前安装 Helm。
+      概述 与在线安装相比，离线安装需要先在可访问 Internet 的机器上将所需的组件与镜像打包为离线安装包，再将其传输至目标环境进行安装。整体流程如下：
+  构建离线安装包（在联网机器上）：下载组件与镜像，并打包为 artifact.tgz。
+  传输离线包：将 artifact.tgz 拷贝至目标环境（例如通过存储介质或内网传输）。
+  安装集群（在目标环境）：解压离线包，将镜像推送至私有镜像仓库（若单独安装私有镜像仓库，即方式一；若由 KubeKey 在创建集群时同步安装，镜像推送由安装流程自动完成），然后安装 Kubernetes 与 KubeSphere。</description>
     </item>
     
     <item>

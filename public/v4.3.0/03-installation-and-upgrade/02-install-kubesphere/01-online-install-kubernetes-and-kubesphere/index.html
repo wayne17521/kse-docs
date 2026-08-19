@@ -23539,7 +23539,7 @@
     在线安装 Kubernetes 和 KubeSphere</h1>
   <div class="post-info">
     <div class="post-date">
-      更新时间：2026-08-12 07:42:59
+      更新时间：2026-08-19 01:35:32
     </div>
     
     
@@ -23554,11 +23554,12 @@
   <div class="post-menu-title">本页目录</div>
   <nav id="TableOfContents">
   <ul>
+    <li><a href="#_核心概念">核心概念</a></li>
     <li><a href="#_前提条件">前提条件</a></li>
     <li><a href="#_配置防火墙规则">配置防火墙规则</a></li>
     <li><a href="#_选择安装方式">选择安装方式</a>
       <ul>
-        <li><a href="#_web_页面安装">Web 页面安装</a></li>
+        <li><a href="#_web_installer_安装">Web Installer 安装</a></li>
         <li><a href="#_命令行安装">命令行安装</a></li>
       </ul>
     </li>
@@ -23574,6 +23575,33 @@
 </div>
 <div class="paragraph">
 <p>安装过程中将用到开源工具 KubeKey  的 v4.x 版本。有关 KubeKey 的更多信息，请访问 <a href="https://github.com/kubesphere/kubekey">GitHub KubeKey 仓库</a>。</p>
+</div>
+<div class="sect1">
+<h2 id="_核心概念">核心概念</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>阅读后续步骤前，建议先了解以下基本概念：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>控制平面节点 (Master)</strong>: 负责集群的调度与管理，通常不运行业务负载。</p>
+</li>
+<li>
+<p><strong>工作节点 (Worker)</strong>: 运行实际业务容器的工作负载节点。</p>
+</li>
+<li>
+<p><strong>etcd</strong>: 分布式键值存储，保存集群的所有关键状态数据。</p>
+</li>
+<li>
+<p><strong>容器运行时</strong>: 负责创建和运行容器的底层软件。KubeKey 支持自动安装 Docker 和 containerd 两种容器运行时。如需使用 CRI-O 或 iSula，需提前手动安装，但其与 KubeSphere 的兼容性尚未经过充分验证。</p>
+</li>
+<li>
+<p><strong>CNI (容器网络插件)</strong>: 为集群中的 Pod 提供网络连通能力，常用插件包括 Calico、Cilium、Flannel 等。</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 <div class="sect1">
 <h2 id="_前提条件">前提条件</h2>
@@ -23617,7 +23645,7 @@
 <p>默认情况下，KubeSphere 使用集群节点的本地磁盘空间作为持久化存储。在生产环境中，建议提前配置外部存储系统作为持久化存储。有关更多信息，请参阅<a href="../../../03-installation-and-upgrade/01-preparations/04-configure-external-persistent-storage/">配置外部持久化存储</a>。</p>
 </li>
 <li>
-<p>如果集群节点未安装容器运行时，安装工具 KubeKey 将在安装过程中自动为每个集群节点安装 Docker 作为容器运行时。您也可以提前手动安装 containerd、CRI-O 或 iSula 作为容器运行时。</p>
+<p>如果集群节点未安装容器运行时，安装工具 KubeKey 将在安装过程中自动为每个集群节点安装容器运行时。KubeKey 默认安装 containerd，您也可以在配置文件中指定 Docker 作为容器运行时。</p>
 <div class="openblock">
 <div class="content">
 <table class="tableblock frame-all grid-all stretch admon note">
@@ -23632,7 +23660,7 @@
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>CRI-O 和 iSula 与 KubeSphere 的兼容性尚未经过充分测试，可能存在未知问题。</p>
+<p>如需使用 CRI-O 或 iSula，需提前手动安装，但其与 KubeSphere 的兼容性尚未经过充分验证，可能存在未知问题。</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -23648,11 +23676,29 @@
 </li>
 <li>
 <p>请确保所有集群节点时间同步。</p>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
+<colgroup>
+<col style="width: 100%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>KubeKey 依赖 <code>tar</code> 工具完成软件包的压缩与解压，请务必确认已安装。</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </li>
 </ul>
-</div>
-<div class="paragraph">
-<p>安装过程中，KubeKey 依赖 <code>tar</code> 工具完成软件包的压缩和解压处理，请提前确认系统环境已安装该命令。</p>
 </div>
 </div>
 </div>
@@ -23967,26 +24013,29 @@
 </tr>
 </tbody>
 </table>
+<div class="paragraph">
+<p>如需在测试环境中临时关闭防火墙，可执行 <code>systemctl stop firewalld</code>；生产环境请按上表精确放行所需端口。</p>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_选择安装方式">选择安装方式</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>支持通过以下两种方式安装 Kubernetes 和 KubeSphere：</p>
+<p>以下两种方法均可完成 Kubernetes 和 KubeSphere 的安装，<strong>安装结果一致，您只需选择其中一种操作入口即可，无需同时执行</strong>：</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Web 页面安装</strong>：适用于希望通过图形化界面完成节点添加、参数配置和安装校验的场景。</p>
+<p><strong>方法 1: Web Installer 安装</strong>：适用于希望通过图形化界面完成节点添加、参数配置和安装校验的场景。</p>
 </li>
 <li>
-<p><strong>命令行安装</strong>：适用于熟悉命令行操作、需要精细化配置集群参数的场景。</p>
+<p><strong>方法 2: 命令行安装</strong>：适用于熟悉命令行操作、需要精细化配置集群参数的场景。</p>
 </li>
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_web_页面安装">Web 页面安装</h3>
+<h3 id="_web_installer_安装">Web Installer 安装</h3>
 <div class="sect3">
 <h4 id="_1_下载_kubekey_和_web_installer">1. 下载 KubeKey 和 Web Installer</h4>
 <div class="paragraph">
@@ -24003,6 +24052,27 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-shell" data-lang="shell">curl -sfL https://get-kk.kubesphere.io | SKIP_PACKAGE=true sh -</code></pre>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
+<colgroup>
+<col style="width: 100%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>SKIP_PACKAGE=true` 表示跳过离线打包脚本（<code>package.sh</code>）的下载，在线安装场景无需此脚本。</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="paragraph">
@@ -24057,7 +24127,7 @@
 </div>
 </div>
 <div class="sect3">
-<h4 id="_3_打开_web_installer_页面">3. 打开 Web Installer 页面</h4>
+<h4 id="_3_通过_web_installer_部署_kubernetes_和_kubesphere">3. 通过 Web Installer 部署 Kubernetes 和 KubeSphere</h4>
 <div class="paragraph">
 <p>在浏览器中访问 <code>http://&lt;启动节点 IP 地址&gt;:8080</code>，打开 KubeKey 的 Web Installer 页面。</p>
 </div>
@@ -24066,20 +24136,36 @@
 </div>
 </div>
 <div class="sect3">
-<h4 id="_4_添加集群节点">4. 添加集群节点</h4>
+<h4 id="_3_1_添加集群节点">3.1 添加集群节点</h4>
 <div class="paragraph">
-<p>在 <strong>基本信息</strong> 页面，添加 Kubernetes 节点。Web Installer 支持以下三种节点添加方式：</p>
+<p>在 <strong>基本信息</strong> 页面，添加集群节点。每个节点需要指定角色，支持以下三种：</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>手动添加</p>
+<p><strong>Master</strong>：控制平面节点，负责集群调度与管理。Master 节点上会自动安装 etcd。</p>
 </li>
 <li>
-<p>文件上传</p>
+<p><strong>Worker</strong>：工作节点，运行实际业务容器。</p>
 </li>
 <li>
-<p>节点扫描</p>
+<p><strong>Image</strong>：镜像仓库节点，用于自动部署私有镜像仓库。在线安装时通常无需配置此角色。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Web Installer 支持以下三种节点添加方式：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>手动添加</strong>：适用于添加单个节点。您需要填写主机名、IP 地址、SSH 地址、SSH 认证等信息。</p>
+</li>
+<li>
+<p><strong>文件上传</strong>：适用于批量添加节点。请根据模板填写节点信息后上传文件。</p>
+</li>
+<li>
+<p><strong>节点扫描</strong>：适用于自动发现节点。您可以通过 IP CIDR 扫描节点，并根据扫描结果选择需要添加的节点。</p>
 </li>
 </ul>
 </div>
@@ -24121,7 +24207,7 @@
 </div>
 </div>
 <div class="sect3">
-<h4 id="_5_修改配置参数">5. 修改配置参数</h4>
+<h4 id="_3_2_修改配置参数">3.2 修改配置参数</h4>
 <div class="paragraph">
 <p>配置部署 Kubernetes 和 KubeSphere 所需的参数。</p>
 </div>
@@ -24133,136 +24219,49 @@
 <img src="/images/ks-qkcp/zh/v4.2.0/web-installer/install-config.png" alt="install config" width="80%"/>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_kubernetes_配置">Kubernetes 配置</h5>
-<table class="tableblock frame-all grid-all stretch">
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
 <colgroup>
-<col style="width: 16.6666%;"/>
-<col style="width: 16.6666%;"/>
-<col style="width: 66.6668%;"/>
+<col style="width: 100%;"/>
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">分类</th>
-<th class="tableblock halign-left valign-top">参数</th>
-<th class="tableblock halign-left valign-top">描述</th>
+<th class="tableblock halign-left valign-top">说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群配置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群名称</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">输入集群名称。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群配置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Kubernetes 版本</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">选择需要安装的 Kubernetes 版本。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群配置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群访问地址</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群的统一访问入口地址，通常为负载均衡器的域名或 IP 地址。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群配置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">端口</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群的访问端口。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群配置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">路由方式</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">支持 <code>local</code> 和 <code>haproxy</code> 两种方式。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">容器运行时</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">类型</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">容器运行时类型，支持 <code>docker</code> 和 <code>containerd</code>。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">网络设置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">网络插件</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">网络插件类型，例如 <code>calico</code>、<code>cilium</code>、<code>flannel</code>、<code>hybridnet</code> 和 <code>kubeovn</code>。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">网络设置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">每节点最大 Pod 数</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">每个节点可运行 Pod 的最大数量。默认值：<code>110</code>。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">网络设置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Service CIDR</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群内部 Service 可用的 IP 地址范围。Service CIDR 支持 IPv4 和 IPv6，不能与同一集群中的其他网络地址范围重复，例如 Pod CIDR 和节点 IP 地址。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">网络设置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Pod CIDR</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集群内部 Pod 可用的 IP 地址范围。Pod CIDR 支持 IPv4 和 IPv6，不能与同一集群中的其他网络地址范围重复，例如节点 IP 地址。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">网络设置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">IPv4/IPv6 掩码大小</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">IP 地址中用于标识网络部分的位数。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">镜像仓库配置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">仓库地址</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">填写私有镜像仓库的实际地址。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">镜像仓库配置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">用户名和密码</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">填写私有镜像仓库的登录用户名和密码。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">存储设置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">启用</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">启用集群节点的本地存储系统。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">存储设置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">设置为默认存储</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">将本地存储设置为默认存储类。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">存储设置</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">存储路径</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">存储卷在宿主机上的存储路径。</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>如果您访问 GitHub / Google APIs 受限，请切换到 YAML 模式并添加 <code>zone: cn</code> 参数，KubeKey 将从国内地址下载二进制文件。同时建议将镜像仓库地址设置为 <code>hub.kubesphere.com.cn</code>。切换为国内源后，仅支持有限的 Kubernetes 版本，具体支持版本请参考 [get-images.kubesphere.io](<a href="https://get-images.kubesphere.io" class="bare">https://get-images.kubesphere.io</a>) 页面的 Kubernetes 标签页。</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="sect4">
-<h5 id="_kubesphere_core_配置">KubeSphere Core 配置</h5>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 20%;"/>
-<col style="width: 80%;"/>
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">参数</th>
-<th class="tableblock halign-left valign-top">描述</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">全局镜像仓库</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">填写全局镜像仓库地址。</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">扩展组件镜像仓库</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">填写扩展组件镜像仓库地址。</p></td>
-</tr>
-</tbody>
-</table>
+</div>
+<div class="paragraph">
+<p><strong>安装镜像仓库（可选）</strong></p>
+</div>
+<div class="paragraph">
+<p>如果需要在安装集群时同时部署私有镜像仓库，请在添加节点时添加 Image 角色的节点，并在 Kubernetes 配置参数中将镜像仓库类型设置为 <code>harbor</code> 或 <code>docker-registry</code>：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>单节点镜像仓库</strong>：添加 1 个 Image 角色节点，在 Kubernetes 配置参数中设置镜像仓库类型。</p>
+</li>
+<li>
+<p><strong>高可用镜像仓库</strong>：添加多个 Image 角色节点（建议 ≥ 3 个），在 Kubernetes 配置参数中设置镜像仓库类型，并配置镜像仓库高可用虚拟 IP 作为访问入口。</p>
+</li>
+</ul>
+</div>
 <div class="paragraph">
 <p>配置完成后，点击 <strong>下一步</strong>。</p>
 </div>
 </div>
-</div>
 <div class="sect3">
-<h4 id="_6_预览安装配置">6. 预览安装配置</h4>
+<h4 id="_3_3_预览安装配置">3.3 预览安装配置</h4>
 <div class="paragraph">
 <p>在 <strong>安装预览</strong> 页面，确认版本、节点、网络、存储等信息无误后，点击 <strong>下一步：执行安装</strong> 开始安装。</p>
 </div>
@@ -24271,7 +24270,7 @@
 </div>
 </div>
 <div class="sect3">
-<h4 id="_7_执行安装">7. 执行安装</h4>
+<h4 id="_3_4_执行安装">3.4 执行安装</h4>
 <div class="paragraph">
 <p>等待安装完成。安装完成后，系统会自动进入安装校验流程。</p>
 </div>
@@ -24283,12 +24282,30 @@
 <img src="/images/ks-qkcp/zh/v4.2.0/web-installer/installing.png" alt="installing"/>
 </div>
 </div>
-<div class="paragraph">
-<p><strong>说明：</strong> 如需在 Web Installer 页面重新安装、修改配置参数或清除配置，可点击左侧的 <strong>初始化</strong> 按钮。初始化操作会重置 Kubernetes 节点上的所有任务，并回到基本信息页面。该操作不可逆，请谨慎执行。</p>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
+<colgroup>
+<col style="width: 100%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>如需在 Web Installer 页面重新安装、修改配置参数或清除配置，可点击左侧的 <strong>初始化</strong> 按钮。初始化操作会重置 Kubernetes 节点上的所有任务，并回到基本信息页面。该操作不可逆，请谨慎执行。</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_8_安装校验">8. 安装校验</h4>
+<h4 id="_3_5_安装校验">3.5 安装校验</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -24299,8 +24316,26 @@
 </li>
 <li>
 <p>在浏览器中输入访问地址，登录 KubeSphere Web 控制台，即可开始使用 KubeSphere。</p>
-<div class="paragraph">
-<p><strong>说明：</strong> 取决于您的网络环境，您可能需要配置流量转发规则，并在防火墙中放行 30880 端口。</p>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
+<colgroup>
+<col style="width: 100%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>取决于您的网络环境，您可能需要配置流量转发规则，并在防火墙中放行 30880 端口。</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </li>
 </ol>
@@ -24325,6 +24360,27 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-shell" data-lang="shell">curl -sfL https://get-kk.kubesphere.io | SKIP_WEB_INSTALLER=true SKIP_PACKAGE=true sh -</code></pre>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
+<colgroup>
+<col style="width: 100%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>SKIP_WEB_INSTALLER=true</code> 跳过 Web Installer 资源下载，<code>SKIP_PACKAGE=true</code> 跳过离线打包脚本下载。命令行安装仅需 <code>kk</code> 二进制文件。</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="paragraph">
@@ -24518,7 +24574,7 @@ spec:
 </div>
 </div>
 <div class="paragraph">
-<p>将 <code>&lt;Kubernetes version&gt;</code> 替换为实际需要的版本，例如 <code>v1.27.4</code>。KubeSphere 默认支持 Kubernetes <code>v1.23~v1.34</code>。</p>
+<p>将 <code>&lt;Kubernetes version&gt;</code> 替换为实际需要的版本，例如 <code>v1.32.11</code>。KubeSphere 默认支持 Kubernetes <code>v1.23~v1.34</code>。</p>
 </div>
 <div class="paragraph">
 <p>命令执行完毕后将生成安装配置文件 <code>config-&lt;Kubernetes version&gt;.yaml</code>。</p>
@@ -24605,6 +24661,30 @@ spec:
 <div class="sect3">
 <h4 id="_6_安装_kubesphere">6. 安装 KubeSphere</h4>
 <div class="paragraph">
+<p>KubeKey v4.x 将 Kubernetes 和 KubeSphere 解耦安装，安装完 Kubernetes 后需手动执行以下 Helm 命令安装 KubeSphere。</p>
+</div>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
+<colgroup>
+<col style="width: 100%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Web Installer 安装方式会自动完成 KubeSphere 的安装，无需手动执行此步骤。</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="paragraph">
 <p>执行以下命令安装 KubeSphere：</p>
 </div>
 <div class="listingblock">
@@ -24613,11 +24693,29 @@ spec:
 version=1.2.5
 helm upgrade --install -n kubesphere-system --create-namespace ks-core $chart \
   --debug --wait --version $version --reset-values --take-ownership \
-  --set global.imageRegistry=hub.kubesphere.com.cn,extension.imageRegistry=hub.kubesphere.com.cn \</code></pre>
+  --set global.imageRegistry=hub.kubesphere.com.cn,extension.imageRegistry=hub.kubesphere.com.cn</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p><strong>注意：</strong> Helm 版本需要 &gt;= 3.17.0。</p>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
+<colgroup>
+<col style="width: 100%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>--take-ownership</code> 用于接管集群中已存在的同名资源，避免安装冲突。该参数需要 Helm &gt;= 3.17.0。</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="paragraph">
 <p>如果显示如下信息，则表示 KubeSphere 安装成功：</p>
@@ -24684,11 +24782,12 @@ NOTE: It is highly recommended to change the default password immediately after 
   <div class="post-menu-title">本页目录</div>
   <nav id="TableOfContents">
   <ul>
+    <li><a href="#_核心概念">核心概念</a></li>
     <li><a href="#_前提条件">前提条件</a></li>
     <li><a href="#_配置防火墙规则">配置防火墙规则</a></li>
     <li><a href="#_选择安装方式">选择安装方式</a>
       <ul>
-        <li><a href="#_web_页面安装">Web 页面安装</a></li>
+        <li><a href="#_web_installer_安装">Web Installer 安装</a></li>
         <li><a href="#_命令行安装">命令行安装</a></li>
       </ul>
     </li>
