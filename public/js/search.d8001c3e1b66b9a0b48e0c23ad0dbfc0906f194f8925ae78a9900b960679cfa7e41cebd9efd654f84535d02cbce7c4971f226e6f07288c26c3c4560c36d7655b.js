@@ -93,7 +93,7 @@ function searchFromSearchData(query, $searchDomMap) {
 }
 
 function getSearchData(callback) {
-  $.get("/js/search/" + $('.navbar-nav-item .project-version').text().trim() + "/lunr.json?9b5f3a558390ee5e9604f067dcfd5a93", callback);
+  $.get("/js/search/" + $('.navbar-nav-item .project-version').text().trim() + "/lunr.json?e274e1e9805bc90481adb83364cc8a6c", callback);
 }
 
 function insertResultToDom(query, $searchDomMap, searchData) {
