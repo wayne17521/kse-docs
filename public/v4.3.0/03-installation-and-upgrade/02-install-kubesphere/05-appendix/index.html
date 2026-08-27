@@ -23538,7 +23538,7 @@
     附录：KubeSphere Core 高级配置</h1>
   <div class="post-info">
     <div class="post-date">
-      更新时间：2026-08-18 11:01:42
+      更新时间：2026-08-27 07:19:07
     </div>
     
     
@@ -26297,7 +26297,8 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">helm upgrade --install -n kubesphere-system --create-namespace ks-core $chart --version $version \
 --set ingress.enabled=true \
---set hostname=kubesphere.my.org</code></pre>
+--set portal.hostname=kubesphere.my.org \
+--set ingress.ingressClassName=&lt;ingressClassName&gt; \</code></pre>
 </div>
 </div>
 </li>
@@ -26309,10 +26310,11 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">helm upgrade --install -n kubesphere-system --create-namespace ks-core $chart --version $version \
---set hostname=kubesphere.my.org \
+--set portal.hostname=kubesphere.my.org \
 --set ingress.enabled=true \
 --set ingress.tls.source=letsEncrypt \
---set letsEncrypt.email=me@example.org</code></pre>
+--set letsEncrypt.email=me@example.org \
+--set ingress.ingressClassName=&lt;ingressClassName&gt; \</code></pre>
 </div>
 </div>
 </li>
@@ -26327,8 +26329,9 @@ kubectl create secret tls tls-ks-core-ingress --cert=tls.crt --key=tls.key -n ku
 helm upgrade --install -n kubesphere-system --create-namespace ks-core
 $chart --version $version \
 --set ingress.enabled=true \
---set hostname=kubesphere.my.org \
---set ingress.tls.source=importation</code></pre>
+--set portal.hostname=kubesphere.my.org \
+--set ingress.tls.source=importation \
+--set ingress.ingressClassName=&lt;ingressClassName&gt; \</code></pre>
 </div>
 </div>
 </li>
@@ -26337,6 +26340,47 @@ $chart --version $version \
 </div>
 </div>
 </li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch admon note">
+<colgroup>
+<col style="width: 100%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>若使用 KubeSphere 网关扩展提供的网关，可将 &lt;ingressClassName&gt; 设置为:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>kubesphere-router-cluster: 这时需启用集群网关</p>
+</li>
+<li>
+<p>kubesphere-router-namespace-kubesphere-system: 这时需启用 ks-core 所在 kubesphere-system 的项目网关</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>如果启用网关时自定义了 ingressClassName, 上边的 &lt;ingressClassName&gt; 在设置时需要同步</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
 <li>
 <p>启用内部服务 SSL 配置</p>
 <div class="listingblock">
@@ -26345,9 +26389,6 @@ $chart --version $version \
 $chart --version $version \
 --set internalTLS=true</code></pre>
 </div>
-</div>
-</li>
-</ol>
 </div>
 </li>
 </ol>
